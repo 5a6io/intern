@@ -1,0 +1,67 @@
+- name: Set MFA
+  hosts: serviceservers
+  remote_user: lucy
+  become: true
+  become_method: sudo
+
+  tasks:
+  - name: Install epel-release package
+    dnf:
+      name: epel-release
+      state: present
+
+  - name: Update dnf cache after enabling EPEL
+    dnf:
+      update_cache: yes
+
+  - name: Install google authentication
+    dnf:
+      name: google-authenticator
+      state: present
+
+  - name: Install qrencode
+    dnf:
+      name: qrencode
+      state: present
+   
+  - name: Crete ~/.ssh directory
+    file:
+      path: ~/.ssh
+      state: directory
+      mode: "0700"
+      
+  - name: Create /etc/ssh/sshd_config.d/10.gauth.conf
+    copy:
+      dest: /etc/ssh/sshd_config.d/10.gauth.conf
+      content: |
+        ChallengeResponseAuthentication yes
+      mode: '0644'
+  
+  - name: Configure Google Authenticator
+    command:
+      cmd: google-authenticator -t -d -f -r 3 -R 30 -W -s .ssh/google
+      stdin: -1
+    become: true
+    become_user: lucy
+  
+  - name: Update /etc/pam.d/sshd
+    lineinfile:
+      path: /etc/pam.d/sshd
+      regexp: '^auth\s+required\s+pam_google_authenticator\.so'
+      line: "auth required pam_google_authenticator.so secret=${HOME}/.ssh/google"
+      insertbefore: '^auth\s+substack\s+password-auth'
+      state: present
+      backup: true
+
+  - name: Update /etc/ssh/sshd_config.d/50-redhat.conf
+    lineinfile:
+      path: /etc/ssh/sshd_config.d/50-redhat.conf
+      regexp: "^#?ChallengeResponseAuthentication"
+      backup: true
+      line: "#ChallengeResponseAuthentication no"
+      state: present
+
+  - name: restart sshd
+    service:
+      name: sshd
+      state: restarted

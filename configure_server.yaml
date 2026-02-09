@@ -1,0 +1,71 @@
+- name: Configure web
+  hosts: web
+
+  tasks:
+  - name: Install Apache
+    dnf:
+      name: httpd
+      state: present
+
+  - name: Start Apache
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+
+- name: Configure was
+  hosts: was
+  
+  tasks:
+  - name: Install JDK
+    dnf:
+      name: java-17-openjdk
+      state: latest
+
+  - name: Install Tomcat
+    dnf:
+      name: tomcat
+      state: present
+
+  - name: Install Tomcat Webapps
+    dnf:
+      name: tomcat-webapps
+      state: present
+
+  - name: Install Tomcat Admin Webapps
+    dnf:
+      name: tomcat-admin-webapps
+      state: present
+
+  - name: Start Tomcat
+    service:
+      name: tomcat
+      state: started
+      enabled: yes
+
+- name: Configure DB
+  hosts: database
+  become: true
+  tasks:
+    - name: Install PostgreSQL
+      dnf:
+        name: postgresql-server
+        state: present
+
+    - name: Check if PostgreSQL data directory is initialized
+      stat:
+        path: /var/lib/pgsql/data/PG_VERSION
+      register: pg_data_dir
+
+    - set_fact:
+        postgresql_data_dir_initialized: "{{ pg_data_dir.stat.exists }}"
+
+    - name: Init DB
+      command: postgresql-setup --initdb
+      when: not postgresql_data_dir_initialized
+
+    - name: Start PostgreSQL
+      service:
+        name: postgresql
+        state: started
+        enabled: yes
