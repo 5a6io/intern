@@ -10,7 +10,7 @@
 | web1 | Rocky Linux release 9.7 | 2 | 1 | 20 | 22, 80, 10050 | Google OTP 인증, Apache, Zabbix agent |
 | was1 | Rocky Linux release 9.7 | 2 | 1 | 20 | 22, 8080, 10050 | Google OTP 인증, Tomcat, Zabbix agent |
 | db1 | Rocky Linux release 9.7 | 2 | 1 | 20 | 22, 5432, 10050 | Google OTP 인증, PostgreSQL, Zabbix agent |
-| zbx | Rocky Linux release 9.8 | 2 | 2 | 20 | 22, 10051 | Zabbix server, frontend(Nginx) |
+| zbx | Rocky Linux release 9.7 | 2 | 2 | 20 | 22, 10051 | Zabbix server, frontend(Nginx) |
 | bastion | Rocky Linux release 9.7 | 2 | 2 | 20 | 22| - |
 
 ### S/W
